@@ -1,68 +1,64 @@
-<p align="center">
-    <img src="https://raw.githubusercontent.com/IntellectualSites/Assets/main/plugins/PlotSquared/PlotSquared.svg" width="250">
-</p>
+# PlotNova
 
----
+A Paper-first plot management plugin for Minecraft, forked from PlotSquared.
 
-PlotSquared is a land and world management plugin for Minecraft.
-It includes several highly configurable world generators.
-You can create plots of land in existing worlds using plot clusters, or you can have a full world of plots.
+PlotNova replaces Bukkit-specific APIs with Paper-native equivalents, providing better performance, modern Adventure Components, and access to Paper's built-in Dialog API.
 
-For the end user, PlotSquared is packed with a tonne of cool features.
-It allows you to merge plots, and build together with your friends.
-You can also change a lot of plot specific settings in the form of
-flags. Such as: weather, time, game modes, pvp status.
+## Features
 
-Whilst we provide a whole load of unique features, the biggest focus
-is to provide a lag-free and smooth experience.
+- Plot creation, management, and protection
+- Configurable world generators
+- Plot merging, trading, and collaboration
+- Flag system for weather, time, game modes, PvP, and more
+- Placeholder support via PlaceholderAPI and MiniPlaceholder
+- World management via Multiverse-Core, Multiverse-NWT, or FancyWorlds
 
+## Requirements
 
-<p align="center">
-    <a href="https://bstats.org/plugin/bukkit/PlotSquared" title="PlotSquared on bStats">
-        <img src="https://bstats.org/signatures/bukkit/PlotSquared.svg" />
-    </a>
-</p>
+- **Server software:** Paper 1.21.1 or later (Paper-only, no Spigot/Bukkit support)
+- **Java:** 21 or later
+- **Optional dependencies:** WorldEdit, FAWE, PlaceholderAPI, MiniPlaceholder, LuckPerms, Vault, EssentialsX, Multiverse-Core, FancyWorlds
 
-## Links
+## Building
 
-* [Download](https://www.spigotmc.org/resources/77506/)
-* [Discord](https://discord.gg/intellectualsites)
-* [Wiki](https://intellectualsites.gitbook.io/plotsquared/)
-* [Issues](https://github.com/IntellectualSites/PlotSquared/issues)
-* [Translations](https://intellectualsites.crowdin.com/plotsquared/)
-* [Contributing](https://github.com/IntellectualSites/.github/blob/main/CONTRIBUTING.md)
+```bash
+./gradlew build
+```
 
-### Developer Resources
+The output JAR will be in `paper/build/libs/`.
 
-* [API Documentation](https://intellectualsites.gitbook.io/plotsquared/api/api-documentation)
-* [Event API](https://intellectualsites.gitbook.io/plotsquared/api/event-api)
-* [Flag API](https://intellectualsites.gitbook.io/plotsquared/api/flag-api)
+## Project Structure
 
-# Official Addons
+```bash
+PlotNova/
+├── shared/        # Core module (platform-independent logic)
+├── paper/         # Paper module (Paper-specific implementation)
+├── gradle/        # Gradle version catalog
+├── PHASES.md      # Migration progress tracker
+└── build.gradle.kts
+```
 
-* [Plot2Dynmap](http://www.spigotmc.org/resources/plot2dynmap.1292/)
-* [HoloPlots](https://www.spigotmc.org/resources/holoplots.4880/)
-* [PlotHider](https://www.spigotmc.org/resources/plot-hider.20701/)
+## Development
 
-### Edit The Code
+PlotNova targets Paper exclusively. All Bukkit/Spigot compatibility code has been removed in favor of Paper-native APIs:
 
-Want to add new features to PlotSquared or fix bugs yourself? You can get the game running, with PlotSquared, from the code here:
+- **Adventure Components** for all messaging (no legacy ChatColor)
+- **Paper Dialog API** for UIs (replacing inventory menus)
+- **Paper teleport** with `teleportAsync()` and `TeleportCause`
+- **Paper scheduler** via `TaskManager` abstraction
 
-For additional information about compiling PlotSquared,
-see [CONTRIBUTING.md](https://github.com/IntellectualSites/.github/blob/main/CONTRIBUTING.md)
+See [PHASES.md](PHASES.md) for the full migration plan and progress.
 
-### Submitting Your Changes
+## Contributing
 
-PlotSquared is open source (specifically licensed under GPL v3), so note that your contributions will also be open source. The
-best way to submit a change is to create a fork on GitHub, put your changes there, and then create a "pull request" on our
-PlotSquared repository.
+Contributions are welcome. Please:
 
-<a href="https://yourkit.com/">
-    <img src="https://www.yourkit.com/images/yklogo.png">
-</a>
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
-Thank you to YourKit for supporting our product by providing us with their innovative and intelligent tools
-for monitoring and profiling Java and .NET applications.
-YourKit is the creator
-of [YourKit Java Profiler](https://www.yourkit.com/java/profiler/), [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/),
-and [YourKit YouMonitor](https://www.yourkit.com/youmonitor/).
+All contributions must compile against Paper 1.21.1+ and follow the existing code style.
+
+## License
+
+PlotNova is licensed under the [GNU General Public License v3.0](LICENSE).

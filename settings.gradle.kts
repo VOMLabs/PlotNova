@@ -1,8 +1,8 @@
-rootProject.name = "PlotSquared"
+rootProject.name = "PlotNova"
 
-include("Core", "Bukkit")
+include("shared", "paper")
 
-project(":Core").name = "plotsquared-core"
-project(":Bukkit").name = "plotsquared-bukkit"
+project(":shared").name = "plotnova-core"
+project(":paper").name = "plotnova-paper"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

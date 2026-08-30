@@ -19,8 +19,8 @@ plugins {
     alias(libs.plugins.runPaper)
 }
 
-group = "com.intellectualsites.plotsquared"
-version = "7.6.1-SNAPSHOT"
+group = "com.plotnova"
+version = "1.0.0-SNAPSHOT"
 
 if (!File("$rootDir/.git").exists()) {
     logger.lifecycle("""
@@ -236,7 +236,7 @@ tasks {
             dependsOn(cacheLatestFaweArtifact)
             minecraftVersion(version)
             pluginJars(project.files(
-                project(":plotsquared-bukkit").tasks.named<Jar>("shadowJar")
+                project(":plotnova-paper").tasks.named<Jar>("shadowJar")
                 .map { it.archiveFile }
             ))
             jvmArgs("-DPaper.IgnoreJavaVersion=true", "-Dcom.mojang.eula.agree=true")
