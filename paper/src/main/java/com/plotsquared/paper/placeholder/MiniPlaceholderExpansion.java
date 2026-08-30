@@ -38,6 +38,11 @@ import java.util.concurrent.TimeUnit;
  */
 public final class MiniPlaceholderExpansion {
 
+    // Cached constant Components — avoids allocation per placeholder evaluation
+    private static final Component COMP_EMPTY = Component.empty();
+    private static final Component COMP_FALSE = Component.text("false");
+    private static final Component COMP_ZERO = Component.text("0");
+
     private MiniPlaceholderExpansion() {
         // Utility class
     }
@@ -63,7 +68,7 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("has_plot", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.text("false"));
+                return Tag.selfClosingInserting(COMP_FALSE);
             }
             final boolean hasPlot = plotPlayer.getPlotCount() > 0;
             return Tag.selfClosingInserting(Component.text(hasPlot));
@@ -73,7 +78,7 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_count", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.text("0"));
+                return Tag.selfClosingInserting(COMP_ZERO);
             }
             return Tag.selfClosingInserting(Component.text(plotPlayer.getPlotCount()));
         });
@@ -82,7 +87,7 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_count_world", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.text("0"));
+                return Tag.selfClosingInserting(COMP_ZERO);
             }
             final String worldName = plotPlayer.getLocation().getWorldName();
             return Tag.selfClosingInserting(Component.text(plotPlayer.getPlotCount(worldName)));
@@ -92,11 +97,11 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_area", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             final var plotArea = plotPlayer.getLocation().getPlotArea();
             if (plotArea == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             return Tag.selfClosingInserting(Component.text(plotArea.getWorldName()));
         });
@@ -105,11 +110,11 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_id", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             final var plot = plotPlayer.getCurrentPlot();
             if (plot == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             return Tag.selfClosingInserting(Component.text(plot.getId().toString()));
         });
@@ -118,15 +123,15 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_owner", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             final var plot = plotPlayer.getCurrentPlot();
             if (plot == null || !plot.hasOwner()) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             final UUID ownerUuid = plot.getOwnerAbs();
             if (ownerUuid == null) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
             try {
                 final String ownerName = PlotSquared.platform().playerManager()
@@ -135,7 +140,7 @@ public final class MiniPlaceholderExpansion {
                         .toString();
                 return Tag.selfClosingInserting(Component.text(ownerName));
             } catch (final Exception e) {
-                return Tag.selfClosingInserting(Component.empty());
+                return Tag.selfClosingInserting(COMP_EMPTY);
             }
         });
 
@@ -143,7 +148,7 @@ public final class MiniPlaceholderExpansion {
         builder.audiencePlaceholder("plot_count_not_done", (audience, queue, ctx) -> {
             final PlotPlayer<?> plotPlayer = getPlayer(audience);
             if (plotPlayer == null) {
-                return Tag.selfClosingInserting(Component.text("0"));
+                return Tag.selfClosingInserting(COMP_ZERO);
             }
             final int count = PlotQuery.newQuery()
                     .ownedBy(plotPlayer)

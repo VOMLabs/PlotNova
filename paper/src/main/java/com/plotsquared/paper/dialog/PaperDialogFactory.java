@@ -66,6 +66,11 @@ import java.util.List;
 public class PaperDialogFactory implements DialogFactory {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder().build();
+    // Cached constant Components for dialog button labels
+    private static final Component BTN_BACK = Component.text("Back");
+    private static final Component BTN_BACK_TOOLTIP = Component.text("Go back to the previous step");
+    private static final Component BTN_CANCEL = Component.text("Cancel");
+    private static final Component BTN_CANCEL_TOOLTIP = Component.text("Cancel the setup process");
     private final EconHandler econHandler;
     private final EventDispatcher eventDispatcher;
 
@@ -419,8 +424,8 @@ public class PaperDialogFactory implements DialogFactory {
 
         // Add back button if there's history
         if (process.getCurrentStep() != CommonSetupSteps.CHOOSE_GENERATOR) {
-            final Component backLabel = Component.text("Back");
-            final Component backTooltip = Component.text("Go back to the previous step");
+        final Component backLabel = BTN_BACK;
+        final Component backTooltip = BTN_BACK_TOOLTIP;
 
             final DialogActionCallback backCallback = (responseView, responseAudience) -> {
                 process.back();
@@ -434,8 +439,8 @@ public class PaperDialogFactory implements DialogFactory {
         }
 
         // Add cancel button
-        final Component cancelLabel = Component.text("Cancel");
-        final Component cancelTooltip = Component.text("Cancel the setup process");
+        final Component cancelLabel = BTN_CANCEL;
+        final Component cancelTooltip = BTN_CANCEL_TOOLTIP;
 
         final DialogActionCallback cancelCallback = (responseView, responseAudience) -> {
             player.sendMessage(TranslatableCaption.of("setup.setup_cancelled"));

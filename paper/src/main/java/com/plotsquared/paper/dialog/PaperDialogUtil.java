@@ -45,6 +45,10 @@ import java.util.UUID;
  */
 public final class PaperDialogUtil {
 
+    // Cached constant Components for dialog button labels
+    private static final Component BTN_YES = Component.text("Yes");
+    private static final Component BTN_NO = Component.text("No");
+
     private static final Map<UUID, CompletableFuture<Boolean>> pendingConfirmations = new ConcurrentHashMap<>();
 
     private PaperDialogUtil() {
@@ -84,10 +88,10 @@ public final class PaperDialogUtil {
                         .body(List.of(DialogBody.plainMessage(message)))
                         .build())
                 .type(DialogType.confirmation(
-                        ActionButton.builder(Component.text("Yes"))
+                        ActionButton.builder(BTN_YES)
                                 .action(DialogAction.customClick(confirmCallback, ClickCallback.Options.builder().build()))
                                 .build(),
-                        ActionButton.builder(Component.text("No"))
+                        ActionButton.builder(BTN_NO)
                                 .action(DialogAction.customClick(cancelCallback, ClickCallback.Options.builder().build()))
                                 .build()
                 )));

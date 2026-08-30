@@ -38,6 +38,11 @@ import org.bukkit.entity.Player;
  */
 public final class PaperConfirmationHelper {
 
+    // Cached constant Components
+    private static final Component TITLE_CONFIRM = Component.text("Confirm Action");
+    private static final Component MSG_CONFIRM = Component.text("Are you sure you want to proceed?");
+    private static final Component CMD_CONFIRM = Component.text("/plot confirm");
+
     private PaperConfirmationHelper() {
         // Utility class
     }
@@ -91,7 +96,7 @@ public final class PaperConfirmationHelper {
                     TagResolver.builder()
                             .tag("command", Tag.inserting(Component.text(commandStr)))
                             .tag("timeout", Tag.inserting(Component.text(Settings.Confirmation.CONFIRMATION_TIMEOUT_SECONDS)))
-                            .tag("value", Tag.inserting(Component.text("/plot confirm")))
+                            .tag("value", Tag.inserting(CMD_CONFIRM))
                             .build()
             );
         }
@@ -116,8 +121,8 @@ public final class PaperConfirmationHelper {
                 player,
                 commandStr,
                 runnable,
-                Component.text("Confirm Action"),
-                Component.text("Are you sure you want to proceed?")
+                TITLE_CONFIRM,
+                MSG_CONFIRM
         );
     }
 

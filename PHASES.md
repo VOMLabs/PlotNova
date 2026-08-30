@@ -14,13 +14,14 @@ PlotNova is a Paper-first fork of PlotSquared. This document tracks the migratio
 | 4  | Paper Dialog API            | ✅ Done     |
 | 5  | Paper Player API            | ✅ Done     |
 | 6  | World & Chunk               | ✅ Done     |
-| 7  | Performance                 | ⏳ Pending  |
+| 7  | Performance                 | ✅ Done     |
 | 8  | Configuration               | ⏳ Pending  |
 | 9  | API Cleanup                 | ⏳ Pending  |
 | 10 | Dependency Cleanup          | ⏳ Pending  |
 | 11 | Integrations                | ✅ Done     |
 | 12 | Language & Config Migration | ⏳ Pending  |
 | 13 | Dialog Confirmations        | 🔮 Future   |
+| 14 | ServiceIO Integration        | 🔮 Future   |
 
 ---
 
@@ -102,12 +103,21 @@ Replaced deprecated Bukkit player interactions with Paper-native equivalents.
 
 ---
 
-## Phase 7 — Performance ⏳
+## Phase 7 — Performance ✅
 
-* Move database queries, plot searches, permission lookups off main thread
-* Folia-compatible region scheduler abstractions
-* Replace synchronized legacy collections, reduce allocations
-* Cache immutable Components
+Reduced synchronization overhead, cached Component allocations, and improved concurrency.
+
+### Component Caching
+
+* `MiniPlaceholderExpansion`: Cached `Component.empty()`, `Component.text("0")`, `Component.text("false")` as static finals
+* `PaperDialogUtil`: Cached `Component.text("Yes")`, `Component.text("No")` button labels
+* `PaperDialogFactory`: Cached `Component.text("Back")`, `Component.text("Cancel")` button labels
+* `PaperConfirmationHelper`: Cached title, message, and command components
+
+### Synchronized Removal
+
+* `SQLManager`: Removed `synchronized` from 7 methods — replaced check-then-act patterns with `computeIfAbsent` on `ConcurrentHashMap`
+* `ScatteredPlotWorld`: Replaced `Object treeLock` + `synchronized` with `ReentrantReadWriteLock` — read operations (hot path) now allow concurrency, writes are exclusive
 
 ---
 
@@ -170,16 +180,34 @@ Replaced deprecated Bukkit player interactions with Paper-native equivalents.
 
 ## Phase 13 — Dialog Confirmations 🔮 Future
 
-Replace the text-based `/plot confirm` flow with a native Paper Dialog confirmation prompt.
+Replace the text-based `/plot confirm` flow with native Paper Dialog confirmation prompts.
 
 Currently, destructive commands (delete, merge, unlink, trust, etc.) require the player to type `/plot confirm` after a chat message. This phase would:
 
 * Show a confirmation dialog (Yes/No) instead of a chat prompt when the player runs a destructive command
 * Use `DialogType.confirmation()` with Yes/No buttons
 * Maintain the same timeout and expiry logic
-* Fall back to the existing `/plot confirm` text flow on non-Paper servers - BUSTED, PlotNova is Paper-only
+* Remove the need for players to manually type `/plot confirm`
+* Keep the underlying confirmation system and command flow intact
 
 This is a quality-of-life improvement, not a functional change. The existing `ConfirmationHandler` hook already supports this — it just needs the confirmation UI to be wired through `CmdConfirm` properly.
+
+---
+
+## Phase 14 — ServiceIO Integration 🔮 Future - ONLY IF INCOMPATIBLE
+
+Integrate ServiceIO for structured service dependency management and lifecycle control.
+
+> ServiceIO is already compatible with PlotNova's Vault-based/VaultUnlocked-based architecture and will provide a standardized abstraction for service discovery, registration, dependency resolution, and lifecycle management.
+
+* Register PlotNova services through ServiceIO
+* Use ServiceIO for service discovery and dependency resolution
+* Integrate economy and permission services through ServiceIO
+* Replace manual Vault/VaultUnlocked detection where appropriate
+* Replace FancyWorlds reflection-based integration with ServiceIO service resolution where supported
+* Integrate placeholder and other optional services through ServiceIO
+* Add or contribute missing ServiceIO support where required for PlotNova integrations
+* Ensure graceful degradation when optional services are unavailable
 
 ---
 

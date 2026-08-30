@@ -275,20 +275,15 @@ public class SQLManager implements AbstractDB {
         }
     }
 
-    public synchronized Queue<Runnable> getGlobalTasks() {
+    public Queue<Runnable> getGlobalTasks() {
         return this.globalTasks;
     }
 
-    public synchronized Queue<Runnable> getNotifyTasks() {
+    public Queue<Runnable> getNotifyTasks() {
         return this.notifyTasks;
     }
 
-    public synchronized void addPlotTask(@NonNull Plot plot, UniqueStatement task) {
-        Queue<UniqueStatement> tasks = this.plotTasks.get(plot);
-        if (tasks == null) {
-            tasks = new ConcurrentLinkedQueue<>();
-            this.plotTasks.put(plot, tasks);
-        }
+    public void addPlotTask(@NonNull Plot plot, UniqueStatement task) {
         if (task == null) {
             task = new UniqueStatement(String.valueOf(plot.hashCode())) {
 
@@ -311,17 +306,12 @@ public class SQLManager implements AbstractDB {
 
             };
         }
-        tasks.add(task);
+        this.plotTasks.computeIfAbsent(plot, k -> new ConcurrentLinkedQueue<>()).add(task);
     }
 
-    public synchronized void addPlayerTask(UUID uuid, UniqueStatement task) {
+    public void addPlayerTask(UUID uuid, UniqueStatement task) {
         if (uuid == null) {
             return;
-        }
-        Queue<UniqueStatement> tasks = this.playerTasks.get(uuid);
-        if (tasks == null) {
-            tasks = new ConcurrentLinkedQueue<>();
-            this.playerTasks.put(uuid, tasks);
         }
         if (task == null) {
             task = new UniqueStatement(String.valueOf(uuid.hashCode())) {
@@ -345,15 +335,10 @@ public class SQLManager implements AbstractDB {
 
             };
         }
-        tasks.add(task);
+        this.playerTasks.computeIfAbsent(uuid, k -> new ConcurrentLinkedQueue<>()).add(task);
     }
 
-    public synchronized void addClusterTask(PlotCluster cluster, UniqueStatement task) {
-        Queue<UniqueStatement> tasks = this.clusterTasks.get(cluster);
-        if (tasks == null) {
-            tasks = new ConcurrentLinkedQueue<>();
-            this.clusterTasks.put(cluster, tasks);
-        }
+    public void addClusterTask(PlotCluster cluster, UniqueStatement task) {
         if (task == null) {
             task = new UniqueStatement(String.valueOf(cluster.hashCode())) {
 
@@ -376,20 +361,20 @@ public class SQLManager implements AbstractDB {
 
             };
         }
-        tasks.add(task);
+        this.clusterTasks.computeIfAbsent(cluster, k -> new ConcurrentLinkedQueue<>()).add(task);
     }
 
-    public synchronized void addGlobalTask(Runnable task) {
-        getGlobalTasks().add(task);
+    public void addGlobalTask(Runnable task) {
+        this.globalTasks.add(task);
     }
 
-    public synchronized void addNotifyTask(Runnable task) {
+    public void addNotifyTask(Runnable task) {
         if (task != null) {
-            getNotifyTasks().add(task);
+            this.notifyTasks.add(task);
         }
     }
 
-    public synchronized boolean sendBatch() {
+    public boolean sendBatch() {
         try {
             if (!getGlobalTasks().isEmpty()) {
                 if (this.connection.getAutoCommit()) {
@@ -1558,11 +1543,13 @@ public class SQLManager implements AbstractDB {
 
     @Override
     public int getId(Plot plot) {
+        // Fast path: return cached ID without any DB access
         if (plot.temp > 0) {
             return plot.temp;
         }
         try {
             commit();
+            // Re-check after commit (another thread may have set it)
             if (plot.temp > 0) {
                 return plot.temp;
             }

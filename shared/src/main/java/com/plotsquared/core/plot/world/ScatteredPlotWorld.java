@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Plot world that contains several plot areas (clusters)
@@ -45,7 +47,7 @@ public class ScatteredPlotWorld extends PlotWorld {
     private static final int BRANCH_FACTOR = 30;
 
     private final List<PlotArea> areas = new LinkedList<>();
-    private final Object treeLock = new Object();
+    private final ReadWriteLock treeLock = new ReentrantReadWriteLock();
     private PRTree<PlotArea> areaTree;
 
     /**
@@ -62,12 +64,15 @@ public class ScatteredPlotWorld extends PlotWorld {
         if (this.areas.isEmpty()) {
             return null;
         }
-        synchronized (this.treeLock) {
+        this.treeLock.readLock().lock();
+        try {
             for (final PlotArea area : this.areaTree.find(location.toMBR())) {
                 if (area.contains(location)) {
                     return area;
                 }
             }
+        } finally {
+            this.treeLock.readLock().unlock();
         }
         return null;
     }
@@ -94,7 +99,8 @@ public class ScatteredPlotWorld extends PlotWorld {
         if (this.areas.isEmpty()) {
             return Collections.emptyList();
         }
-        synchronized (this.treeLock) {
+        this.treeLock.readLock().lock();
+        try {
             final List<PlotArea> areas = new LinkedList<>();
 
             final BlockVector3 min = region.getMinimumPoint();
@@ -108,6 +114,8 @@ public class ScatteredPlotWorld extends PlotWorld {
             }
 
             return areas;
+        } finally {
+            this.treeLock.readLock().unlock();
         }
     }
 
@@ -115,9 +123,12 @@ public class ScatteredPlotWorld extends PlotWorld {
      * Rebuild the area tree
      */
     private void buildTree() {
-        synchronized (this.treeLock) {
+        this.treeLock.writeLock().lock();
+        try {
             this.areaTree = new PRTree<>(MBR_CONVERTER, BRANCH_FACTOR);
             this.areaTree.load(this.areas);
+        } finally {
+            this.treeLock.writeLock().unlock();
         }
     }
 
