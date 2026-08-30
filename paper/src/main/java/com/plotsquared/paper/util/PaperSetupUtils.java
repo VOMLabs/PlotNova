@@ -35,7 +35,6 @@ import com.plotsquared.core.setup.PlotAreaBuilder;
 import com.plotsquared.core.util.SetupUtils;
 import com.plotsquared.core.util.task.TaskManager;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -109,16 +108,8 @@ public class PaperSetupUtils extends SetupUtils {
             for (Player player : world.getPlayers()) {
                 PaperSupport.teleportAsync(player, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
             }
-            if (save) {
-                for (Chunk chunk : world.getLoadedChunks()) {
-                    chunk.unload(true);
-                }
-            } else {
-                for (Chunk chunk : world.getLoadedChunks()) {
-                    chunk.unload(false);
-                }
-            }
-            Bukkit.unloadWorld(world, false);
+            // Paper handles chunk unloading internally; no need for manual iteration
+            Bukkit.unloadWorld(world, save);
         });
     }
 

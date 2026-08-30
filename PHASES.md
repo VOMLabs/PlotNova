@@ -13,7 +13,7 @@ PlotNova is a Paper-first fork of PlotSquared. This document tracks the migratio
 | 3  | Adventure Everywhere        | ✅ Done     |
 | 4  | Paper Dialog API            | ✅ Done     |
 | 5  | Paper Player API            | ✅ Done     |
-| 6  | World & Chunk               | ⏳ Pending  |
+| 6  | World & Chunk               | ✅ Done     |
 | 7  | Performance                 | ⏳ Pending  |
 | 8  | Configuration               | ⏳ Pending  |
 | 9  | API Cleanup                 | ⏳ Pending  |
@@ -92,12 +92,13 @@ Replaced deprecated Bukkit player interactions with Paper-native equivalents.
 
 ---
 
-## Phase 6 — World & Chunk ⏳
+## Phase 6 — World & Chunk ✅
 
-* Async chunk loading via Paper APIs
-* Paper heightmap, biome, and world border APIs
-* Paper snapshot APIs for efficient block state manipulation
-* Async world creation with proper failure handling
+* `Chunk.unload(boolean)` → `World.unloadChunk(Chunk)` (non-deprecated) in ChunkListener.java
+* Removed manual chunk-by-chunk unloading in `PaperSetupUtils.unload()` — Paper handles this internally
+* `World.refreshChunk()` annotated as deprecated (no Paper replacement in 1.21.7 API)
+* Async chunk loading already uses Paper's native `world.getChunkAtAsync()` via `PaperSupport`
+* Chunk ticket system (`addPluginChunkTicket`/`removePluginChunkTicket`) is already Paper-native
 
 ---
 

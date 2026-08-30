@@ -389,6 +389,7 @@ public class PaperUtil extends WorldUtil {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // No Paper replacement for refreshChunk in 1.21.7
     public void refreshChunk(int x, int z, String world) {
         Bukkit.getWorld(world).refreshChunk(x, z);
     }

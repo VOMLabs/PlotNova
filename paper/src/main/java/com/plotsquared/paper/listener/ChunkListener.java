@@ -120,7 +120,7 @@ public class ChunkListener implements Listener {
             field.set(true);
             if (chunk.isLoaded()) {
                 ignoreUnload = true;
-                chunk.unload(false);
+                chunk.getWorld().unloadChunk(chunk);
                 ignoreUnload = false;
             }
         }
@@ -241,13 +241,13 @@ public class ChunkListener implements Listener {
         PlotSquaredTask task = TaskManager.runTaskRepeat(() -> {
             if (!chunk.isLoaded()) {
                 Objects.requireNonNull(TaskManager.removeTask(currentIndex)).cancel();
-                chunk.unload(true);
+                chunk.getWorld().unloadChunk(chunk);
                 return;
             }
             BlockState[] tiles = getTiles(chunk);
             if (tiles.length == 0) {
                 Objects.requireNonNull(TaskManager.removeTask(currentIndex)).cancel();
-                chunk.unload(true);
+                chunk.getWorld().unloadChunk(chunk);
                 return;
             }
             long start = System.currentTimeMillis();
@@ -255,7 +255,7 @@ public class ChunkListener implements Listener {
             while (System.currentTimeMillis() - start < 250) {
                 if (i >= tiles.length - Settings.Chunk_Processor.MAX_TILES) {
                     Objects.requireNonNull(TaskManager.removeTask(currentIndex)).cancel();
-                    chunk.unload(true);
+                    chunk.getWorld().unloadChunk(chunk);
                     return;
                 }
                 tiles[i].getBlock().setType(Material.AIR, false);
