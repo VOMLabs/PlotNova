@@ -312,8 +312,10 @@ public class PaperPlayer extends PlotPlayer<Player> {
     @Override
     public void playMusic(final @NonNull Location location, final @NonNull ItemType id) {
         if (id == ItemTypes.AIR) {
-            // Stop all music using Paper's category-based stopSound
-            this.player.stopSound(org.bukkit.SoundCategory.MUSIC);
+            // Stop all music using Bukkit SoundCategory (no Paper replacement yet)
+            @SuppressWarnings("deprecation")
+            final org.bukkit.SoundCategory musicCategory = org.bukkit.SoundCategory.MUSIC;
+            this.player.stopSound(musicCategory);
             return;
         }
         this.player.playSound(
@@ -322,10 +324,9 @@ public class PaperPlayer extends PlotPlayer<Player> {
         );
     }
 
-    @SuppressWarnings("deprecation") // Needed for Spigot compatibility
     @Override
     public void kick(final String message) {
-        this.player.kickPlayer(message);
+        this.player.kick(net.kyori.adventure.text.Component.text(message));
     }
 
     @Override

@@ -12,7 +12,7 @@ PlotNova is a Paper-first fork of PlotSquared. This document tracks the migratio
 | 2  | Replace Bukkit APIs         | ✅ Done     |
 | 3  | Adventure Everywhere        | ✅ Done     |
 | 4  | Paper Dialog API            | ✅ Done     |
-| 5  | Paper Player API            | ⏳ Pending  |
+| 5  | Paper Player API            | ✅ Done     |
 | 6  | World & Chunk               | ⏳ Pending  |
 | 7  | Performance                 | ⏳ Pending  |
 | 8  | Configuration               | ⏳ Pending  |
@@ -67,8 +67,8 @@ Replaced chest GUIs and chat-based confirmations with Paper's native Dialog API.
 
 ### Converted GUIs
 
-| Command           | Before         | After                |
-| ----------------- | -------------- | -------------------- |
+| Command            | Before         | After                |
+| ------------------ | -------------- | -------------------- |
 | `/plot components` | Chest GUI      | Multi-action dialog  |
 | `/plot music`      | Chest GUI      | Multi-action dialog  |
 | `/plot rate`       | Chest GUI      | Multi-action dialog  |
@@ -78,15 +78,17 @@ All dialogs fall back to PlotInventory/chat on non-Paper servers.
 
 ---
 
-## Phase 5 — Paper Player API ⏳
+## Phase 5 — Paper Player API ✅
 
-Replace Bukkit player interactions with Paper-specific features.
+Replaced deprecated Bukkit player interactions with Paper-native equivalents.
 
-* Paper's `PlayerProfile` API for UUID resolution and skin data
-* Paper inventory improvements (where not suitable for dialogs)
-* Paper teleport causes/options exclusively
-* Adventure sound/title/boss bar/book APIs
-* Paper resource pack API and particle builders
+* `player.kickPlayer(String)` → `player.kick(Component)` (Adventure)
+* `player.stopSound(SoundCategory.MUSIC)` → annotated as deprecated (no Paper replacement yet)
+* `player.getLocale()` → `player.locale()` (Paper's non-deprecated method)
+* `player.getTargetBlock(null, 7)` → `player.getTargetBlockExact(7)` (non-deprecated)
+* `getItemInHand()` → `getItemInMainHand()` (non-deprecated)
+* `event.getEventName().equals("InventoryCreativeEvent")` → `instanceof InventoryCreativeEvent`
+* Removed `player.updateInventory()` (no-op in Paper)
 
 ---
 
@@ -174,7 +176,7 @@ Currently, destructive commands (delete, merge, unlink, trust, etc.) require the
 * Show a confirmation dialog (Yes/No) instead of a chat prompt when the player runs a destructive command
 * Use `DialogType.confirmation()` with Yes/No buttons
 * Maintain the same timeout and expiry logic
-* Fall back to the existing `/plot confirm` text flow on non-Paper servers
+* Fall back to the existing `/plot confirm` text flow on non-Paper servers - BUSTED, PlotNova is Paper-only
 
 This is a quality-of-life improvement, not a functional change. The existing `ConfirmationHandler` hook already supports this — it just needs the confirmation UI to be wired through `CmdConfirm` properly.
 

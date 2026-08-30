@@ -122,6 +122,7 @@ import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -536,7 +537,7 @@ public class PlayerEventListener implements Listener {
         final PlotPlayer<Player> pp = PaperUtil.adapt(player);
 
         // we're stripping the country code as we don't want to differ between countries
-        pp.setLocale(Locale.forLanguageTag(player.getLocale().substring(0, 2)));
+        pp.setLocale(Locale.forLanguageTag(player.locale().getLanguage()));
 
         Location location = pp.getLocation();
         PlotArea area = location.getPlotArea();
@@ -1025,10 +1026,10 @@ public class PlayerEventListener implements Listener {
         }
         PlayerInventory inv = player.getInventory();
         int slot = inv.getHeldItemSlot();
-        if ((slot > 8) || !event.getEventName().equals("InventoryCreativeEvent")) {
+        if ((slot > 8) || !(event instanceof InventoryCreativeEvent)) {
             return;
         }
-        ItemStack oldItem = inv.getItemInHand();
+        ItemStack oldItem = inv.getItemInMainHand();
         ItemMeta oldMeta = oldItem.getItemMeta();
         ItemStack newItem = event.getCursor();
         ItemMeta newMeta = newItem.getItemMeta();
@@ -1075,7 +1076,7 @@ public class PlayerEventListener implements Listener {
                 return;
             }
         }
-        Block block = player.getTargetBlock(null, 7);
+        Block block = player.getTargetBlockExact(7);
         org.bukkit.block.BlockState state = block.getState();
         Material stateType = state.getType();
         if (stateType != itemType) {

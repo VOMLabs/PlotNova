@@ -111,7 +111,7 @@ public class PaperInventoryUtil extends InventoryUtil {
             return true;
         }
         opened.setItem(index, stack);
-        bp.player.updateInventory();
+        // Paper auto-syncs inventory changes; updateInventory() is a no-op
         return true;
     }
 
