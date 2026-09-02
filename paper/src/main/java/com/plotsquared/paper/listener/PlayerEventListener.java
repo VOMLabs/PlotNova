@@ -41,7 +41,6 @@ import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotId;
-import com.plotsquared.core.plot.PlotInventory;
 import com.plotsquared.core.plot.flag.FlagContainer;
 import com.plotsquared.core.plot.flag.implementations.AnimalInteractFlag;
 import com.plotsquared.core.plot.flag.implementations.BlockedCmdsFlag;
@@ -121,7 +120,6 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -1016,14 +1014,6 @@ public class PlayerEventListener implements Listener {
             return;
         }
         PaperPlayer pp = PaperUtil.adapt(player);
-        final PlotInventory inventory = PlotInventory.getOpenPlotInventory(pp);
-        if (inventory != null && event.getRawSlot() == event.getSlot()) {
-            if (!inventory.onClick(event.getSlot())) {
-                event.setResult(Event.Result.DENY);
-                event.setCancelled(true);
-                inventory.close();
-            }
-        }
         PlayerInventory inv = player.getInventory();
         int slot = inv.getHeldItemSlot();
         if ((slot > 8) || !(event instanceof InventoryCreativeEvent)) {
@@ -1467,15 +1457,6 @@ public class PlayerEventListener implements Listener {
                 event.setCancelled(true);
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryClose(InventoryCloseEvent event) {
-        HumanEntity closer = event.getPlayer();
-        if (!(closer instanceof Player player)) {
-            return;
-        }
-        PlotInventory.removePlotInventoryOpen(PaperUtil.adapt(player));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

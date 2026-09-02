@@ -30,21 +30,18 @@ import com.plotsquared.core.util.PlotUploader;
 import com.plotsquared.core.util.SchematicHandler;
 import com.plotsquared.core.util.StringMan;
 import com.plotsquared.core.util.TabCompletions;
-import com.plotsquared.core.util.WorldUtil;
-import com.plotsquared.core.util.task.RunnableVal;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CommandDeclaration(usage = "/plot download [schem | world]",
+@CommandDeclaration(usage = "/plot download [schem]",
         command = "download",
         aliases = {"dl"},
         category = CommandCategory.SCHEMATIC,
@@ -56,19 +53,16 @@ public class Download extends SubCommand {
     private final PlotUploader plotUploader;
     @NonNull
     private final SchematicHandler schematicHandler;
-    private final WorldUtil worldUtil;
 
     @Inject
     public Download(
             final @NonNull PlotAreaManager plotAreaManager,
             final @NonNull PlotUploader plotUploader,
-            final @NonNull SchematicHandler schematicHandler,
-            final @NonNull WorldUtil worldUtil
+            final @NonNull SchematicHandler schematicHandler
     ) {
         this.plotAreaManager = plotAreaManager;
         this.plotUploader = plotUploader;
         this.schematicHandler = schematicHandler;
-        this.worldUtil = worldUtil;
     }
 
     @Override
@@ -107,40 +101,6 @@ public class Download extends SubCommand {
             }
             plot.addRunning();
             upload(player, plot);
-        } else if (args.length == 1 && StringMan
-                .isEqualIgnoreCaseToAny(args[0], "mcr", "world", "mca")) {
-            if (!player.hasPermission(Permission.PERMISSION_DOWNLOAD_WORLD)) {
-                player.sendMessage(
-                        TranslatableCaption.of("permission.no_permission"),
-                        TagResolver.resolver(
-                                "node",
-                                Tag.inserting(Permission.PERMISSION_DOWNLOAD_WORLD)
-                        )
-                );
-                return false;
-            }
-            player.sendMessage(TranslatableCaption.of("schematics.mca_file_size"));
-            plot.addRunning();
-            this.worldUtil.saveWorld(world);
-            this.worldUtil.upload(plot, null, null, new RunnableVal<>() {
-                @Override
-                public void run(URL url) {
-                    plot.removeRunning();
-                    if (url == null) {
-                        player.sendMessage(
-                                TranslatableCaption.of("web.generating_link_failed"),
-                                TagResolver.resolver("plot", Tag.inserting(Component.text(plot.getId().toString())))
-                        );
-                        return;
-                    }
-                    player.sendMessage(
-                            TranslatableCaption.of("web.generation_link_success_legacy_world"),
-                            TagResolver.builder()
-                                    .tag("url", Tag.preProcessParsed(url.toString()))
-                                    .build()
-                    );
-                }
-            });
         } else {
             sendUsage(player);
             return false;
@@ -158,9 +118,6 @@ public class Download extends SubCommand {
             final List<String> completions = new LinkedList<>();
             if (player.hasPermission(Permission.PERMISSION_DOWNLOAD)) {
                 completions.add("schem");
-            }
-            if (player.hasPermission(Permission.PERMISSION_DOWNLOAD_WORLD)) {
-                completions.add("world");
             }
             final List<Command> commands = completions.stream().filter(completion -> completion
                             .toLowerCase()
@@ -183,30 +140,6 @@ public class Download extends SubCommand {
     }
 
     private void upload(PlotPlayer<?> player, Plot plot) {
-        if (Settings.Web.LEGACY_WEBINTERFACE) {
-            schematicHandler
-                    .getCompoundTag(plot)
-                    .whenComplete((compoundTag, throwable) -> schematicHandler.upload(
-                            compoundTag,
-                            null,
-                            null,
-                            new RunnableVal<>() {
-                                @Override
-                                public void run(URL value) {
-                                    plot.removeRunning();
-                                    player.sendMessage(
-                                            TranslatableCaption.of("web.generation_link_success"),
-                                            TagResolver.builder()
-                                                    .tag("download", Tag.preProcessParsed(value.toString()))
-                                                    .tag("delete", Tag.preProcessParsed("Not available"))
-                                                    .build()
-                                    );
-                                }
-                            }
-                    ));
-            return;
-        }
-        // TODO legacy support
         this.plotUploader.upload(plot)
                 .whenComplete((result, throwable) -> {
                     if (throwable != null || !result.isSuccess()) {

@@ -18,6 +18,7 @@
  */
 package com.plotsquared.core;
 
+import com.plotsquared.core.configuration.ConfigValidator;
 import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
 import com.plotsquared.core.configuration.MemorySection;
@@ -1364,6 +1365,13 @@ public class PlotSquared {
             }
         }
         Settings.load(configFile);
+
+        // Run config schema migrations if needed
+        runConfigMigrations();
+
+        // Validate settings values at startup
+        ConfigValidator.validate();
+
         //Sets the version information for the settings.yml file
         try (InputStream stream = getClass().getResourceAsStream("/plugin.properties")) {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
@@ -1377,6 +1385,56 @@ public class PlotSquared {
         }
         Settings.save(configFile);
         config = YamlConfiguration.loadConfiguration(configFile);
+    }
+
+    /**
+     * Run sequential config migrations based on the stored schema version.
+     * Migrations are executed in order when the stored version is behind
+     * {@link ConfigValidator#SCHEMA_VERSION}.
+     */
+    private void runConfigMigrations() {
+        final YamlConfiguration yml = YamlConfiguration.loadConfiguration(configFile);
+        final int storedVersion = ConfigValidator.getStoredSchemaVersion(yml);
+        final int currentVersion = ConfigValidator.SCHEMA_VERSION;
+
+        if (storedVersion >= currentVersion) {
+            return;
+        }
+
+        LOGGER.info("Settings schema version {} -> {}. Running migrations...", storedVersion, currentVersion);
+
+        for (int v = storedVersion; v < currentVersion; v++) {
+            LOGGER.info("Running config migration v{} -> v{}", v, v + 1);
+            applyMigration(yml, v);
+        }
+
+        ConfigValidator.setStoredSchemaVersion(yml, currentVersion);
+        try {
+            yml.save(configFile);
+            LOGGER.info("Config migration complete — schema version now {}", currentVersion);
+        } catch (IOException e) {
+            LOGGER.error("Failed to persist migrated settings.yml", e);
+        }
+    }
+
+    /**
+     * Apply a single migration step. Add cases here when adding new migrations.
+     *
+     * @param config    the loaded YAML configuration
+     * @param fromVersion the version being migrated <em>from</em>
+     */
+    private void applyMigration(final YamlConfiguration config, final int fromVersion) {
+        switch (fromVersion) {
+            case 0 -> {
+                // Migration v0 -> v1: initial schema version support.
+                // Nothing to transform — the version-schema key is written by
+                // setStoredSchemaVersion after all migrations complete.
+                LOGGER.info("  v0 -> v1: Schema versioning enabled");
+            }
+            default -> {
+                LOGGER.warn("  Unknown migration from v{}, skipping", fromVersion);
+            }
+        }
     }
 
     /**

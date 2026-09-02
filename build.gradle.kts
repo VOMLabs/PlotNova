@@ -253,3 +253,19 @@ tasks {
         }
     }
 }
+
+// Simple dev server task for 1.21.7 — no FAWE download, Java 21
+tasks.register<RunServer>("runDevServer") {
+    description = "Run a Paper 1.21.7 dev server with PlotNova loaded"
+    group = "run paper"
+    minecraftVersion("1.21.7")
+    pluginJars(project.files(
+        project(":plotnova-paper").tasks.named<Jar>("shadowJar")
+        .map { it.archiveFile }
+    ))
+    jvmArgs("-DIReallyKnowWhatIAmDoingISwear=true", "-Dcom.mojang.eula.agree=true")
+    downloadPlugins {
+        url("https://cdn.modrinth.com/data/1u6JkXh5/versions/F5ea2ov3/worldedit-bukkit-7.4.5.jar")
+    }
+    runDirectory.set(file("run-server"))
+}

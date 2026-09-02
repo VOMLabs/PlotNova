@@ -30,7 +30,6 @@ import com.plotsquared.paper.queue.PaperChunkCoordinator;
 import com.plotsquared.paper.queue.PaperQueueCoordinator;
 import com.plotsquared.paper.schematic.PaperSchematicHandler;
 import com.plotsquared.paper.util.PaperChunkManager;
-import com.plotsquared.paper.util.PaperInventoryUtil;
 import com.plotsquared.paper.util.PaperRegionManager;
 import com.plotsquared.paper.util.PaperSetupUtils;
 import com.plotsquared.paper.util.PaperUtil;
@@ -60,7 +59,6 @@ import com.plotsquared.core.queue.subscriber.DefaultProgressSubscriber;
 import com.plotsquared.core.queue.subscriber.ProgressSubscriber;
 import com.plotsquared.core.util.ChunkManager;
 import com.plotsquared.core.util.EconHandler;
-import com.plotsquared.core.util.InventoryUtil;
 import com.plotsquared.core.util.PlayerManager;
 import com.plotsquared.core.util.RegionManager;
 import com.plotsquared.core.util.SchematicHandler;
@@ -98,7 +96,6 @@ public class PaperModule extends AbstractModule {
         @NonNull ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
         WorldEditPlugin wePlugin = ((WorldEditPlugin) Bukkit.getPluginManager().getPlugin("WorldEdit"));
         bind(Actor.class).annotatedWith(ConsoleActor.class).toInstance(wePlugin.wrapCommandSender(console));
-        bind(InventoryUtil.class).to(PaperInventoryUtil.class);
         bind(SetupUtils.class).to(PaperSetupUtils.class);
         bind(WorldUtil.class).to(PaperUtil.class);
         install(new FactoryModuleBuilder()

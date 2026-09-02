@@ -73,6 +73,7 @@ import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
 import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.Storage;
+import com.plotsquared.paper.configuration.PaperSettings;
 import com.plotsquared.core.configuration.caption.ChatFormatter;
 import com.plotsquared.core.configuration.file.YamlConfiguration;
 import com.plotsquared.core.database.DBFunc;
@@ -280,6 +281,20 @@ public final class PaperPlatform extends JavaPlugin implements Listener, PlotPla
         TaskManager.setPlatformImplementation(new PaperTaskManager(this, timeConverter));
 
         final PlotSquared plotSquared = new PlotSquared(this, "Paper");
+
+        // Load Paper-specific configuration
+        final File paperSettingsFile = new File(getDataFolder(), "paper-settings.yml");
+        if (!paperSettingsFile.exists()) {
+            try {
+                if (!paperSettingsFile.createNewFile()) {
+                    LOGGER.error("Could not create paper-settings.yml. Please create it manually");
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to create paper-settings.yml", e);
+            }
+        }
+        PaperSettings.load(paperSettingsFile);
+        PaperSettings.save(paperSettingsFile);
 
         // FastAsyncWorldEdit
         if (Settings.FAWE_Components.FAWE_HOOK) {

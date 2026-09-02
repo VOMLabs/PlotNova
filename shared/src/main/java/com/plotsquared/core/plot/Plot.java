@@ -604,7 +604,7 @@ public class Plot {
     /**
      * Efficiently get the players currently inside this plot<br>
      * - Will return an empty list if no players are in the plot<br>
-     * - Remember, you can cast a PlotPlayer to its respective implementation (BukkitPlayer, SpongePlayer) to obtain the player object
+     * - Remember, you can cast a PlotPlayer to its respective implementation (PaperPlayer) to obtain the player object
      *
      * @return list of PlotPlayer(s) or an empty list
      */

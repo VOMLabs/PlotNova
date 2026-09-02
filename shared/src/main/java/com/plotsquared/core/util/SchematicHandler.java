@@ -19,8 +19,6 @@
 package com.plotsquared.core.util;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParseException;
 import com.google.inject.Inject;
 import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.configuration.Settings;
@@ -33,7 +31,6 @@ import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.schematic.Schematic;
 import com.plotsquared.core.queue.QueueCoordinator;
-import com.plotsquared.core.util.net.AbstractDelegateOutputStream;
 import com.plotsquared.core.util.task.RunnableVal;
 import com.plotsquared.core.util.task.TaskManager;
 import com.plotsquared.core.util.task.YieldRunnable;
@@ -67,9 +64,7 @@ import com.sk89q.worldedit.world.block.BlockTypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,18 +72,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,9 +84,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -119,86 +103,6 @@ public abstract class SchematicHandler {
     public SchematicHandler(final @NonNull WorldUtil worldUtil, @NonNull ProgressSubscriberFactory subscriberFactory) {
         this.worldUtil = worldUtil;
         this.subscriberFactory = subscriberFactory;
-    }
-
-    @Deprecated(forRemoval = true, since = "6.0.0")
-    public static void upload(
-            @Nullable UUID uuid,
-            final @Nullable String file,
-            final @NonNull String extension,
-            final @Nullable RunnableVal<OutputStream> writeTask,
-            final @NonNull RunnableVal<URL> whenDone
-    ) {
-        if (writeTask == null) {
-            TaskManager.runTask(whenDone);
-            return;
-        }
-        final String filename;
-        final String website;
-        final @Nullable UUID finalUuid = uuid;
-        if (uuid == null) {
-            uuid = UUID.randomUUID();
-            website = Settings.Web.URL + "upload.php?" + uuid;
-            filename = "plot." + extension;
-        } else {
-            website = Settings.Web.URL + "save.php?" + uuid;
-            filename = file + '.' + extension;
-        }
-        final URL url;
-        String uri = Settings.Web.URL + "?key=" + uuid + "&type=" + extension;
-        try {
-            url = URI.create(uri).toURL();
-        } catch (MalformedURLException e) {
-            LOGGER.error("Malformed URI `{}`", uri, e);
-            whenDone.run();
-            return;
-        }
-        TaskManager.runTaskAsync(() -> {
-            try {
-                String boundary = Long.toHexString(System.currentTimeMillis());
-                URLConnection con = URI.create(website).toURL().openConnection();
-                con.setDoOutput(true);
-                con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                try (OutputStream output = con.getOutputStream();
-                     PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8), true)) {
-                    String CRLF = "\r\n";
-                    writer.append("--").append(boundary).append(CRLF);
-                    writer.append("Content-Disposition: form-data; name=\"param\"").append(CRLF);
-                    writer.append("Content-Type: text/plain; charset=").append(StandardCharsets.UTF_8.displayName()).append(CRLF);
-                    String param = "value";
-                    writer.append(CRLF).append(param).append(CRLF).flush();
-                    writer.append("--").append(boundary).append(CRLF);
-                    writer.append("Content-Disposition: form-data; name=\"schematicFile\"; filename=\"").append(filename)
-                            .append(String.valueOf('"')).append(CRLF);
-                    writer.append("Content-Type: ").append(URLConnection.guessContentTypeFromName(filename)).append(CRLF);
-                    writer.append("Content-Transfer-Encoding: binary").append(CRLF);
-                    writer.append(CRLF).flush();
-                    writeTask.value = new AbstractDelegateOutputStream(output) {
-                        @Override
-                        public void close() {
-                        } // Don't close
-                    };
-                    writeTask.run();
-                    output.flush();
-                    writer.append(CRLF).flush();
-                    writer.append("--").append(boundary).append("--").append(CRLF).flush();
-                }
-                String content;
-                try (Scanner scanner = new Scanner(con.getInputStream()).useDelimiter("\\A")) {
-                    content = scanner.next().trim();
-                }
-                if (!content.startsWith("<")) {
-                }
-                int responseCode = ((HttpURLConnection) con).getResponseCode();
-                if (responseCode == 200) {
-                    whenDone.value = url;
-                }
-                TaskManager.runTask(whenDone);
-            } catch (IOException e) {
-                LOGGER.error("Error while uploading schematic for UUID {}", finalUuid, e);
-                TaskManager.runTask(whenDone);
-            }
-        });
     }
 
     public boolean exportAll(
@@ -498,52 +402,6 @@ public abstract class SchematicHandler {
             }
         }
         return null;
-    }
-
-    /**
-     * The legacy web interface is deprecated for removal in favor of Arkitektonika.
-     */
-    @Deprecated(forRemoval = true, since = "6.11.0")
-    public List<String> getSaves(UUID uuid) {
-        String rawJSON;
-        try {
-            URLConnection connection = URI.create(
-                    Settings.Web.URL + "list.php?" + uuid.toString())
-                    .toURL()
-                    .openConnection();
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                rawJSON = reader.lines().collect(Collectors.joining());
-            }
-            JsonArray array = GSON.fromJson(rawJSON, JsonArray.class);
-            List<String> schematics = new ArrayList<>();
-            for (int i = 0; i < array.size(); i++) {
-                String schematic = array.get(i).getAsString();
-                schematics.add(schematic);
-            }
-            return schematics;
-        } catch (JsonParseException | IOException e) {
-            LOGGER.error("Error retrieving saves for UUID {}", uuid, e);
-        }
-        return null;
-    }
-
-    @Deprecated(forRemoval = true, since = "6.0.0")
-    public void upload(final CompoundTag tag, UUID uuid, String file, RunnableVal<URL> whenDone) {
-        if (tag == null) {
-            TaskManager.runTask(whenDone);
-            return;
-        }
-        upload(uuid, file, "schem", new RunnableVal<>() {
-            @Override
-            public void run(OutputStream output) {
-                try (NBTOutputStream nos = new NBTOutputStream(new GZIPOutputStream(output, true))) {
-                    nos.writeNamedTag("Schematic", tag);
-                } catch (IOException e1) {
-                    LOGGER.error("Error uploading schematic for UUID {}", uuid, e1);
-                }
-            }
-        }, whenDone);
     }
 
     /**

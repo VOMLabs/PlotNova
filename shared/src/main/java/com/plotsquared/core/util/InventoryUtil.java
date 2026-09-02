@@ -18,50 +18,9 @@
  */
 package com.plotsquared.core.util;
 
-import com.plotsquared.core.player.PlotPlayer;
-import com.plotsquared.core.plot.PlotInventory;
-import com.plotsquared.core.plot.PlotItemStack;
-
 /**
- * This class is only used by internal functions, for most cases use the PlotInventory class
+ * @deprecated InventoryUtil has been removed. Use the Paper Dialog API via {@link com.plotsquared.core.command.DialogFactory} instead.
  */
-public abstract class InventoryUtil {
-
-    public abstract void open(final PlotInventory inv);
-
-    public abstract void close(final PlotInventory inv);
-
-    /**
-     * Attempts to set an item into a {@link PlotInventory} while also checking the existence of the material
-     *
-     * @param plotInventory The inventory where the item should be placed
-     * @param index         The index where to place the item
-     * @param item          The item to place into the inventory
-     * @return {@code true} if the item could be placed, {@code false} otherwise (e.g. item not available in current version)
-     * @since 6.5.0
-     */
-    public abstract boolean setItemChecked(
-            final PlotInventory plotInventory, final int index,
-            final PlotItemStack item
-    );
-
-    /**
-     * Attempts to set an item into a {@link PlotInventory}
-     *
-     * @param plotInventory The inventory where the item should be placed
-     * @param index         The index where to place the item
-     * @param item          The item to place into the inventory
-     * @see #setItemChecked(PlotInventory, int, PlotItemStack)
-     */
-    public void setItem(
-            final PlotInventory plotInventory, final int index,
-            final PlotItemStack item
-    ) {
-        setItemChecked(plotInventory, index, item);
-    }
-
-    public abstract PlotItemStack[] getItems(final PlotPlayer<?> player);
-
-    public abstract boolean isOpen(final PlotInventory plotInventory);
-
+@Deprecated(forRemoval = true)
+public class InventoryUtil {
 }

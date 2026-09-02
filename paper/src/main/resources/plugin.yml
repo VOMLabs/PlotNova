@@ -15,28 +15,23 @@ main: "com.plotsquared.paper.PaperPlatform"
 api-version: "1.21"
 
 # Load order
-load-before:
+loadbefore:
   - "MultiWorld"
   - "Multiverse-Core"
 
-# Dependencies
-dependencies:
-  hard:
-    - "worldedit: '*'"
-  soft:
-    - "vault: '*'"
-    - "placeholderapi: '*'"
-    - "miniplaceholders: '*'"
-    - "fancyworlds: '*'"
-    - "essentials: '*'"
-    - "luckperms: '*'"
-    - "bungeeperms: '*'"
-    - "mvdwplaceholderapi: '*'"
-
-# Paper-specific settings
-paper:
-  autoreload: false
-  unsafe-targeting: false
+# Dependencies — WorldEdit is required at runtime (classes from shared Bukkit classloader)
+depend:
+  - "WorldEdit"
+softdepend:
+  - "Vault"
+  - "VaultUnlocked"
+  - "PlaceholderAPI"
+  - "MiniPlaceholders"
+  - "FancyWorlds"
+  - "EssentialsX"
+  - "LuckPerms"
+  - "BungeePerms"
+  - "MVdWPlaceholderAPI"
 
 # Commands
 commands:
@@ -53,7 +48,6 @@ commands:
       - "plotnova"
 
 # Permissions
-permissions:
 
   # ── Player permissions ──────────────────────────────────────────
   plots.use:
@@ -259,10 +253,6 @@ permissions:
   plots.template.export:
     default: op
   plots.template.import:
-    default: op
-
-  # ── Download permissions ───────────────────────────────────────
-  plots.download.world:
     default: op
 
   # ── Component permissions ──────────────────────────────────────

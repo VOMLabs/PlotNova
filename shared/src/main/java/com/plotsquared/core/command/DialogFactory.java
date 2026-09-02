@@ -37,7 +37,7 @@ public interface DialogFactory {
      * @param player  The player to show the dialog to
      * @param plot    The plot the player is in
      * @param presets The list of allowed presets
-     * @return true if the dialog was shown, false to fall back to PlotInventory
+     * @return true if the dialog was shown
      */
     boolean showComponentDialog(PlotPlayer<?> player, Plot plot, List<ComponentPreset> presets);
 
@@ -46,7 +46,7 @@ public interface DialogFactory {
      *
      * @param player The player to show the dialog to
      * @param plot   The plot to modify
-     * @return true if the dialog was shown, false to fall back to PlotInventory
+     * @return true if the dialog was shown
      */
     boolean showMusicDialog(PlotPlayer<?> player, Plot plot);
 
@@ -57,7 +57,7 @@ public interface DialogFactory {
      * @param plot       The plot to rate
      * @param categories The list of rating categories
      * @param onComplete Callback when all categories are rated
-     * @return true if the dialog was shown, false to fall back to PlotInventory
+     * @return true if the dialog was shown
      */
     boolean showRatingDialog(PlotPlayer<?> player, Plot plot, List<String> categories, Runnable onComplete);
 
@@ -66,7 +66,7 @@ public interface DialogFactory {
      *
      * @param player  The player to show the dialog to
      * @param process The setup process
-     * @return true if the dialog was shown, false to fall back to chat
+     * @return true if the dialog was shown
      */
     boolean showSetupDialog(PlotPlayer<?> player, SetupProcess process);
 

@@ -27,12 +27,9 @@ import com.plotsquared.core.events.TeleportCause;
 import com.plotsquared.core.permissions.Permission;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
-import com.plotsquared.core.plot.PlotInventory;
-import com.plotsquared.core.plot.PlotItemStack;
 import com.plotsquared.core.plot.Rating;
 import com.plotsquared.core.plot.flag.implementations.DoneFlag;
 import com.plotsquared.core.util.EventDispatcher;
-import com.plotsquared.core.util.InventoryUtil;
 import com.plotsquared.core.util.MathMan;
 import com.plotsquared.core.util.TabCompletions;
 import com.plotsquared.core.util.query.PlotQuery;
@@ -60,15 +57,12 @@ import java.util.stream.Collectors;
 public class Rate extends SubCommand {
 
     private final EventDispatcher eventDispatcher;
-    private final InventoryUtil inventoryUtil;
 
     @Inject
     public Rate(
-            final @NonNull EventDispatcher eventDispatcher,
-            final @NonNull InventoryUtil inventoryUtil
+            final @NonNull EventDispatcher eventDispatcher
     ) {
         this.eventDispatcher = eventDispatcher;
-        this.inventoryUtil = inventoryUtil;
     }
 
     @Override
@@ -153,7 +147,7 @@ public class Rate extends SubCommand {
                         return;
                     }
 
-                    // Try dialog first
+                    // Show rating dialog
                     final DialogFactory dialogFactory = DialogFactoryHolder.getDialogFactory();
                     if (dialogFactory != null) {
                         final MutableInt index = new MutableInt(0);
@@ -173,61 +167,6 @@ public class Rate extends SubCommand {
                             return;
                         }
                     }
-
-                    // Fallback to PlotInventory
-                    final MutableInt index = new MutableInt(0);
-                    final MutableInt rating = new MutableInt(0);
-                    String title = Settings.Ratings.CATEGORIES.get(0);
-                    PlotInventory inventory = new PlotInventory(inventoryUtil, player, 1, title) {
-                        @Override
-                        public boolean onClick(int i) {
-                            rating.add((i + 1) * Math.pow(10, index.getValue()));
-                            index.increment();
-                            if (index.getValue() >= Settings.Ratings.CATEGORIES.size()) {
-                                int rV = rating.getValue();
-                                PlotRateEvent event = Rate.this.eventDispatcher
-                                        .callRating(this.getPlayer(), plot, new Rating(rV));
-                                if (event.getRating() != null) {
-                                    plot.addRating(this.getPlayer().getUUID(), event.getRating());
-                                    getPlayer().sendMessage(
-                                            TranslatableCaption.of("ratings.rating_applied"),
-                                            TagResolver.resolver("plot", Tag.inserting(Component.text(plot.getId().toString())))
-                                    );
-                                }
-                                return false;
-                            }
-                            setTitle(Settings.Ratings.CATEGORIES.get(index.getValue()));
-                            return true;
-                        }
-                    };
-                    inventory.setItem(0, new PlotItemStack(Settings.Ratings.BLOCK_0, 1,
-                            TranslatableCaption.of("ratings.0-8").getComponent(player)
-                    ));
-                    inventory.setItem(1, new PlotItemStack(Settings.Ratings.BLOCK_1, 1,
-                            TranslatableCaption.of("ratings.1-8").getComponent(player)
-                    ));
-                    inventory.setItem(2, new PlotItemStack(Settings.Ratings.BLOCK_2, 2,
-                            TranslatableCaption.of("ratings.2-8").getComponent(player)
-                    ));
-                    inventory.setItem(3, new PlotItemStack(Settings.Ratings.BLOCK_3, 3,
-                            TranslatableCaption.of("ratings.3-8").getComponent(player)
-                    ));
-                    inventory.setItem(4, new PlotItemStack(Settings.Ratings.BLOCK_4, 4,
-                            TranslatableCaption.of("ratings.4-8").getComponent(player)
-                    ));
-                    inventory.setItem(5, new PlotItemStack(Settings.Ratings.BLOCK_5, 5,
-                            TranslatableCaption.of("ratings.5-8").getComponent(player)
-                    ));
-                    inventory.setItem(6, new PlotItemStack(Settings.Ratings.BLOCK_6, 6,
-                            TranslatableCaption.of("ratings.6-8").getComponent(player)
-                    ));
-                    inventory.setItem(7, new PlotItemStack(Settings.Ratings.BLOCK_7, 7,
-                            TranslatableCaption.of("ratings.7-8").getComponent(player)
-                    ));
-                    inventory.setItem(8, new PlotItemStack(Settings.Ratings.BLOCK_8, 8,
-                            TranslatableCaption.of("ratings.8-8").getComponent(player)
-                    ));
-                    inventory.openInventory();
                 }
             };
             if (plot.getSettings().getRatings() == null) {

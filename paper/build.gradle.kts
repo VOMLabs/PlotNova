@@ -54,7 +54,8 @@ dependencies {
     // Paper
     compileOnly(libs.paper)
 
-    // Plugins
+    // Plugins — WorldEdit is compileOnly; classes come from the WorldEdit server plugin
+    // at runtime via shared Bukkit classloader (plugin.yml format, not paper-plugin.yml)
     compileOnly(libs.worldeditBukkit)
     compileOnly(libs.faweBukkit) { isTransitive = false }
     testImplementation(libs.faweBukkit) { isTransitive = false }
@@ -80,13 +81,14 @@ dependencies {
 }
 
 tasks.processResources {
-    filesMatching("paper-plugin.yml") {
+    filesMatching("plugin.yml") {
         expand("version" to project.version)
     }
 }
 
 tasks.named<ShadowJar>("shadowJar") {
     dependsOn(":plotnova-core:shadowJar")
+    configurations = listOf(project.configurations["runtimeClasspath"])
     dependencies {
         exclude(dependency("org.checkerframework:"))
     }
@@ -137,3 +139,6 @@ tasks {
         opt.noTimestamp()
     }
 }
+
+// Run Paper server using the xyz.jpenilla.run-paper plugin
+// Configuration is in the paper plugin block above

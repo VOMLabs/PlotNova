@@ -19,7 +19,6 @@
 package com.plotsquared.core.command;
 
 import com.google.inject.Inject;
-import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.caption.StaticCaption;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.permissions.Permission;
@@ -27,22 +26,15 @@ import com.plotsquared.core.player.MetaDataAccess;
 import com.plotsquared.core.player.PlayerMetaDataKeys;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
-import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotId;
-import com.plotsquared.core.plot.schematic.Schematic;
 import com.plotsquared.core.plot.world.PlotAreaManager;
 import com.plotsquared.core.util.SchematicHandler;
 import com.plotsquared.core.util.TimeUtil;
-import com.plotsquared.core.util.task.RunnableVal;
-import com.plotsquared.core.util.task.TaskManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -110,52 +102,15 @@ public class Load extends SubCommand {
                         );
                         return false;
                     }
-                    final URL url;
-                    try {
-                        url = URI.create(Settings.Web.URL + "saves/" + player.getUUID() + '/' + schematic).toURL();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                        player.sendMessage(TranslatableCaption.of("web.load_failed"));
-                        return false;
-                    }
-                    plot.addRunning();
-                    player.sendMessage(TranslatableCaption.of("working.generating_component"));
-                    TaskManager.runTaskAsync(() -> {
-                        Schematic taskSchematic = this.schematicHandler.getSchematic(url);
-                        if (taskSchematic == null) {
-                            plot.removeRunning();
-                            player.sendMessage(
-                                    TranslatableCaption.of("schematics.schematic_invalid"),
-                                    TagResolver.resolver(
-                                            "reason",
-                                            Tag.inserting(Component.text("non-existent or not in gzip format"))
-                                    )
-                            );
-                            return;
-                        }
-                        PlotArea area = plot.getArea();
-                        this.schematicHandler.paste(
-                                taskSchematic,
-                                plot,
-                                0,
-                                area.getMinBuildHeight(),
-                                0,
-                                false,
-                                player,
-                                new RunnableVal<>() {
-                                    @Override
-                                    public void run(Boolean value) {
-                                        plot.removeRunning();
-                                        if (value) {
-                                            player.sendMessage(TranslatableCaption.of("schematics.schematic_paste_success"));
-                                        } else {
-                                            player.sendMessage(TranslatableCaption.of("schematics.schematic_paste_failed"));
-                                        }
-                                    }
-                                }
-                        );
-                    });
-                    return true;
+                    // Legacy web loading has been removed; use local schematic files instead
+                    player.sendMessage(
+                            TranslatableCaption.of("schematics.schematic_invalid"),
+                            TagResolver.resolver(
+                                    "reason",
+                                    Tag.inserting(Component.text("legacy web loading is no longer supported, use /plot schematic paste <file>"))
+                            )
+                    );
+                    return false;
                 }
                 plot.removeRunning();
                 player.sendMessage(
@@ -167,22 +122,14 @@ public class Load extends SubCommand {
 
             // list schematics
 
-            List<String> schematics = metaDataAccess.get().orElse(null);
-            if (schematics == null) {
-                plot.addRunning();
-                TaskManager.runTaskAsync(() -> {
-                    List<String> schematics1 = this.schematicHandler.getSaves(player.getUUID());
-                    plot.removeRunning();
-                    if ((schematics1 == null) || schematics1.isEmpty()) {
-                        player.sendMessage(TranslatableCaption.of("web.load_failed"));
-                        return;
-                    }
-                    metaDataAccess.set(schematics1);
-                    displaySaves(player);
-                });
-            } else {
-                displaySaves(player);
-            }
+            // Legacy web loading has been removed; use local schematic files instead
+            player.sendMessage(
+                    TranslatableCaption.of("schematics.schematic_invalid"),
+                    TagResolver.resolver(
+                            "reason",
+                            Tag.inserting(Component.text("legacy web loading is no longer supported, use /plot schematic paste <file>"))
+                    )
+            );
         }
         return true;
     }

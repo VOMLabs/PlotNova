@@ -85,7 +85,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The abstract class supporting {@code BukkitPlayer} and {@code SpongePlayer}.
+ * The abstract class supporting {@code PaperPlayer}.
  */
 public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer, LocaleHolder {
 

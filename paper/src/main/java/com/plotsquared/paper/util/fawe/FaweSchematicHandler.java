@@ -32,8 +32,6 @@ import com.sk89q.jnbt.CompoundTag;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.InputStream;
-import java.net.URL;
-import java.util.UUID;
 
 public class FaweSchematicHandler extends SchematicHandler {
 
@@ -66,12 +64,6 @@ public class FaweSchematicHandler extends SchematicHandler {
     @Override
     public boolean save(CompoundTag tag, String path) {
         return delegate.save(tag, path);
-    }
-
-    @SuppressWarnings("removal") // Just the override
-    @Override
-    public void upload(final CompoundTag tag, final UUID uuid, final String file, final RunnableVal<URL> whenDone) {
-        delegate.upload(tag, uuid, file, whenDone);
     }
 
     @Override

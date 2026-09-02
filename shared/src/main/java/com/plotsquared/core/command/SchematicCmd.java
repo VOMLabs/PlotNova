@@ -20,7 +20,6 @@ package com.plotsquared.core.command;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.permissions.Permission;
 import com.plotsquared.core.player.ConsolePlayer;
@@ -39,14 +38,11 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @CommandDeclaration(command = "schematic",
@@ -127,22 +123,15 @@ public class SchematicCmd extends SubCommand {
                 TaskManager.runTaskAsync(() -> {
                     Schematic schematic = null;
                     if (location.startsWith("url:")) {
-                        try {
-                            UUID uuid = UUID.fromString(location.substring(4));
-                            URL url = URI.create(Settings.Web.URL + "uploads/" + uuid + ".schematic").toURL();
-                            schematic = this.schematicHandler.getSchematic(url);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            player.sendMessage(
-                                    TranslatableCaption.of("schematics.schematic_invalid"),
-                                    TagResolver.resolver(
-                                            "reason",
-                                            Tag.inserting(Component.text("non-existent url: " + location))
-                                    )
-                            );
-                            SchematicCmd.this.running = false;
-                            return;
-                        }
+                        player.sendMessage(
+                                TranslatableCaption.of("schematics.schematic_invalid"),
+                                TagResolver.resolver(
+                                        "reason",
+                                        Tag.inserting(Component.text("legacy web URLs are no longer supported, use a local schematic file"))
+                                )
+                        );
+                        SchematicCmd.this.running = false;
+                        return;
                     } else {
                         try {
                             schematic = this.schematicHandler.getSchematic(location);

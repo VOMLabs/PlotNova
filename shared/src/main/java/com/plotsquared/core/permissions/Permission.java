@@ -121,7 +121,6 @@ public enum Permission implements ComponentLike {
     PERMISSION_ADMIN_COMMAND_DONE("plots.admin.command.done"),
     PERMISSION_ADMIN_COMMAND_DOWNLOAD("plots.admin.command.download"),
     PERMISSION_DOWNLOAD("plots.download"),
-    PERMISSION_DOWNLOAD_WORLD("plots.download.world"),
     PERMISSION_SET_FLAG_OTHER("plots.set.flag.other"),
     PERMISSION_SET_FLAG("plots.set.flag"),
     PERMISSION_SET_FLAG_KEY("plots.set.flag.%s"),

@@ -23,7 +23,6 @@ import com.plotsquared.core.command.Auto;
 import com.plotsquared.core.command.CmdInstance;
 import com.plotsquared.core.location.Location;
 import com.plotsquared.core.plot.Plot;
-import com.plotsquared.core.plot.PlotInventory;
 import com.plotsquared.core.setup.SetupProcess;
 
 import java.util.List;
@@ -43,8 +42,6 @@ public final class PlayerMetaDataKeys {
     public static final MetaDataKey<Boolean> TEMPORARY_KICK = MetaDataKey.of("kick", new TypeLiteral<>() {
     });
     public static final MetaDataKey<SetupProcess> TEMPORARY_SETUP = MetaDataKey.of("setup", new TypeLiteral<>() {
-    });
-    public static final MetaDataKey<PlotInventory> TEMPORARY_INVENTORY = MetaDataKey.of("inventory", new TypeLiteral<>() {
     });
     public static final MetaDataKey<Boolean> TEMPORARY_IGNORE_EXPIRE_TASK = MetaDataKey.of(
             "ignoreExpireTask",

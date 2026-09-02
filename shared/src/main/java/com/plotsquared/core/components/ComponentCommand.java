@@ -25,7 +25,6 @@ import com.plotsquared.core.command.DialogFactoryHolder;
 import com.plotsquared.core.command.RequiredType;
 import com.plotsquared.core.command.SubCommand;
 import com.plotsquared.core.player.PlotPlayer;
-import com.plotsquared.core.plot.PlotInventory;
 
 @CommandDeclaration(command = "components",
         permission = "plots.components",
@@ -43,11 +42,8 @@ public class ComponentCommand extends SubCommand {
 
     @Override
     public boolean onCommand(final PlotPlayer<?> player, final String[] args) {
-        // Try dialog first
         final DialogFactory dialogFactory = DialogFactoryHolder.getDialogFactory();
         if (dialogFactory != null) {
-            // buildInventory validates the plot and returns null on error
-            // We need to validate separately for the dialog path
             final var plot = player.getCurrentPlot();
             if (plot != null && plot.hasOwner() && (plot.isOwner(player.getUUID())
                     || plot.getTrusted().contains(player.getUUID())
@@ -60,12 +56,6 @@ public class ComponentCommand extends SubCommand {
                     }
                 }
             }
-        }
-
-        // Fallback to PlotInventory
-        final PlotInventory inventory = componentPresetManager.buildInventory(player);
-        if (inventory != null) {
-            inventory.openInventory();
         }
         return true;
     }

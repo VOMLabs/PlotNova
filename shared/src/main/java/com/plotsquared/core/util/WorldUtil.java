@@ -23,12 +23,8 @@ import com.plotsquared.core.configuration.caption.Caption;
 import com.plotsquared.core.location.Location;
 import com.plotsquared.core.location.World;
 import com.plotsquared.core.player.PlotPlayer;
-import com.plotsquared.core.plot.Plot;
-import com.plotsquared.core.util.task.RunnableVal;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.CompoundTagBuilder;
-import com.sk89q.jnbt.NBTInputStream;
-import com.sk89q.jnbt.NBTOutputStream;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.regions.CuboidRegion;
@@ -44,27 +40,18 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public abstract class WorldUtil {
 
@@ -266,72 +253,6 @@ public abstract class WorldUtil {
      * @param world World of the chunk
      */
     public abstract void refreshChunk(int x, int z, String world);
-
-    /**
-     * The legacy web interface is deprecated for removal in favor of Arkitektonika.
-     */
-    @Deprecated(forRemoval = true, since = "6.11.0")
-    public void upload(
-            final @NonNull Plot plot,
-            final @Nullable UUID uuid,
-            final @Nullable String file,
-            final @NonNull RunnableVal<URL> whenDone
-    ) {
-        World<?> world = PlotSquared.platform().getPlatformWorld(plot.getWorldName());
-        String relativeMcaRoot = MODERN_LEVEL_FORMAT ? "dimensions/minecraft/overworld/region" : "region";
-        plot.getHome(home -> SchematicHandler.upload(uuid, file, "zip", new RunnableVal<>() {
-            @Override
-            public void run(OutputStream output) {
-                try (final ZipOutputStream zos = new ZipOutputStream(output)) {
-                    Path dat = getLevelData(world);
-                    Location spawn = getSpawn(plot.getWorldName());
-                    if (dat != null) {
-                        ZipEntry ze = new ZipEntry("level.dat");
-                        zos.putNextEntry(ze);
-                        try (NBTInputStream nis = new NBTInputStream(new GZIPInputStream(Files.newInputStream(dat)))) {
-                            CompoundTag levelData = modifyLevelData((CompoundTag) nis.readNamedTag().getTag(), home);
-                            try (NBTOutputStream out =
-                                         new NBTOutputStream(new GZIPOutputStream(new CloseShieldOutputStream(zos), true))) {
-                                out.writeNamedTag("", levelData);
-                            }
-                        }
-                        zos.closeEntry();
-                    }
-                    setSpawn(spawn);
-                    Set<BlockVector2> added = new HashSet<>();
-                    for (Plot current : plot.getConnectedPlots()) {
-                        Location bot = current.getBottomAbs();
-                        Location top = current.getTopAbs();
-                        int brx = bot.getX() >> 9;
-                        int brz = bot.getZ() >> 9;
-                        int trx = top.getX() >> 9;
-                        int trz = top.getZ() >> 9;
-                        Set<BlockVector2> files = getChunkChunks(world);
-                        for (BlockVector2 mca : files) {
-                            if (mca.getX() >= brx && mca.getX() <= trx && mca.getZ() >= brz && mca.getZ() <= trz && !added.contains(
-                                    mca)) {
-                                final Path path = getMca(world, mca.getX(), mca.getZ());
-                                if (path != null) {
-                                    final ZipEntry ze = new ZipEntry(relativeMcaRoot + "/" + path.getFileName().toString());
-                                    zos.putNextEntry(ze);
-                                    added.add(mca);
-                                    try (InputStream in = Files.newInputStream(path)) {
-                                        in.transferTo(zos);
-                                    }
-                                    zos.closeEntry();
-                                }
-                            }
-                        }
-                    }
-                    zos.closeEntry();
-                    zos.flush();
-                    zos.finish();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, whenDone));
-    }
 
     private @Nullable Path getLevelData(final @NonNull World<?> world) {
         Path path = world.getWorldFolder().resolve("level.dat");
