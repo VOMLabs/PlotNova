@@ -91,6 +91,10 @@ public final class ConfigValidator {
         // --- Tab Completions ---
         validateRange("Tab_Completions.CACHE_EXPIRATION", Settings.Tab_Completions.CACHE_EXPIRATION, 0, 3600, 15, issues);
 
+        // --- PaperSettings (validated via PaperConfigValidator on Paper platform) ---
+        // Note: PaperSettings numeric validation is handled in PaperConfigValidator
+        // because PaperSettings is only available on the Paper platform.
+
         // --- UUID ---
         validateRange("UUID.UUID_CACHE_SIZE", Settings.UUID.UUID_CACHE_SIZE, 1, 10000000, 100000, issues);
         validateRange("UUID.BACKGROUND_LIMIT", Settings.UUID.BACKGROUND_LIMIT, 1, 10000, 200, issues);

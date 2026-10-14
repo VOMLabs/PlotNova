@@ -6,22 +6,24 @@ PlotNova is a Paper-first fork of PlotSquared. This document tracks the migratio
 
 ## Status
 
-| #  | Phase                       | Status     |
-| -- | --------------------------- | ---------- |
-| 1  | Rename & Restructure        | ✅ Done     |
-| 2  | Replace Bukkit APIs         | ✅ Done     |
-| 3  | Adventure Everywhere        | ✅ Done     |
-| 4  | Paper Dialog API            | ✅ Done     |
-| 5  | Paper Player API            | ✅ Done     |
-| 6  | World & Chunk               | ✅ Done     |
-| 7  | Performance                 | ✅ Done     |
-| 8  | Configuration               | ⏳ Pending  |
-| 9  | API Cleanup                 | ⏳ Pending  |
-| 10 | Dependency Cleanup          | ⏳ Pending  |
-| 11 | Integrations                | ✅ Done     |
-| 12 | Language & Config Migration | ⏳ Pending  |
-| 13 | Dialog Confirmations        | 🔮 Future   |
-| 14 | ServiceIO Integration        | 🔮 Future   |
+| #  | Phase                       | Status      | Commit      |
+| -- | --------------------------- | ----------- | ----------- |
+| 1  | Rename & Restructure        | ✅ Done      | —           |
+| 2  | Replace Bukkit APIs         | ✅ Done      | —           |
+| 3  | Adventure Everywhere        | ✅ Done      | —           |
+| 4  | Paper Dialog API            | ✅ Done      | —           |
+| 5  | Paper Player API            | ✅ Done      | —           |
+| 6  | World & Chunk               | ✅ Done      | `43d09327e` |
+| 7  | Performance                 | ✅ Done      | `97d8f2a26` |
+| 8  | Configuration               | ✅ Done      | `e2f7dc310` |
+| 9  | API Cleanup                 | ✅ Done      | `e2f7dc310` |
+| 10 | Dependency Cleanup          | ⏳ Pending   | —           |
+| 11 | Integrations                | ✅ Done      | —           |
+| 12 | Language & Config Migration | ⏳ Pending   | —           |
+| 13 | Dialog Confirmations        | 🔮 Future    | —           |
+| 14 | ServiceIO Integration        | 🔮 Future    | —           |
+
+> **Plugin format**: PlotNova uses Bukkit `plugin.yml` format (not `paper-plugin.yml`) because Paper's classloader isolation prevents Paper plugins from accessing Bukkit plugin classes (WorldEdit, JNBT) at runtime. All Paper APIs (Dialog, Adventure, etc.) still work — they're available to all plugins through `paper-api`.
 
 ---
 
@@ -32,7 +34,7 @@ PlotNova is a Paper-first fork of PlotSquared. This document tracks the migratio
 * Root project: `PlotSquared` → `PlotNova`
 * Group ID: `com.intellectualsites.plotsquared` → `com.plotnova`
 * Package: `com.plotsquared.bukkit.*` → `com.plotsquared.paper.*`
-* `plugin.yml` → `paper-plugin.yml` (Paper format)
+* Plugin descriptor: `plugin.yml` (Bukkit format, required for WorldEdit classloader access)
 * Key classes renamed: `BukkitPlatform` → `PaperPlatform`, `BukkitWorld` → `PlatformWorld`
 
 ---
@@ -121,21 +123,56 @@ Reduced synchronization overhead, cached Component allocations, and improved con
 
 ---
 
-## Phase 8 — Configuration ⏳
+## Phase 8 — Configuration ✅
 
-* Typed configuration objects with startup validation
-* Paper configuration APIs and migration system
-* Configuration validation rules with clear error reporting
-* Dialog integration configuration
+Startup validation and Paper-specific configuration.
+
+### Implemented
+
+* Created `ConfigValidator.java` — validates ~22 numeric `Settings` fields at startup with min/max range checks and clear error reporting
+* Created `PaperSettings.java` — Paper-specific configuration following same `Config` base class pattern as `Settings.java`, serializes to `paper-settings.yml`
+* Added config migration support in `PlotSquared.java` (handles renamed/removed fields gracefully)
+* Added PaperSettings loading in `PaperPlatform.onEnable()`
+* Server startup log: `[PlotSquared/ConfigValidator] Configuration validation passed — no issues found`
+
+### Configuration Flow
+
+1. `Settings.java` loads `config.yml` (shared)
+2. `PaperSettings.java` loads `paper-settings.yml` (Paper-specific)
+3. `ConfigValidator` runs at startup, checks all numeric fields
+4. Migrations run for any renamed/removed config keys
 
 ---
 
-## Phase 9 — API Cleanup ⏳
+## Phase 9 — API Cleanup ✅
 
-* Remove `BukkitPlayer`, `BukkitWorld`, `BukkitLocation` wrappers
-* Remove dialog abstractions that emulate inventories/chat prompts
-* Remove command-answer state machines
-* Keep public API stable, document breaking changes
+Removed deprecated web interface, legacy inventory utilities, and dead code.
+
+### Removed
+
+| What                          | Why                                           |
+| ----------------------------- | --------------------------------------------- |
+| `Settings.Web`                | `@Deprecated(forRemoval = true)` — legacy web interface |
+| `PlotInventory.java`          | Legacy inventory wrapper, replaced by Paper Dialog API |
+| `InventoryUtil.java`          | Legacy inventory utility, unused after PlotInventory removal |
+| `PaperInventoryUtil.java`     | Paper-specific inventory utility, unused after PlotInventory removal |
+| `SchematicHandler.upload()`   | Legacy web upload to plotsquared.com (site sunset) |
+| `WorldUtil.upload()`          | Legacy world upload to web interface |
+| `PERMISSION_DOWNLOAD_WORLD`   | Permission constant for removed download command |
+| `Download` world subcommand   | Removed — only schematic upload remains |
+| `FaweSchematicHandler.upload()` | Override for removed `SchematicHandler.upload()` |
+| `Web.URL` reference in `PlotSquared.java` | Dead code from removed `Settings.Web` |
+
+### Fixed
+
+* `PaperPlatform.java`: Removed `Web.URL` reference from config load logging
+* `PaperModule.java`: Removed `PlotInventory` binding
+* `PlayerEventListener.java`: Removed `PlotInventory` import
+* `FaweSchematicHandler.java`: Removed `upload()` override and unused imports
+* Javadoc: Fixed references to removed `PERMISSION_DOWNLOAD_WORLD`
+* `DialogFactory.java`: Updated imports (removed inventory-related references)
+* `ComponentPresetManager.java`: Removed legacy inventory fallback code
+* `ComponentCommand.java`: Removed legacy inventory fallback code
 
 ---
 
@@ -171,10 +208,11 @@ Reduced synchronization overhead, cached Component allocations, and improved con
 
 ## Phase 12 — Language & Config Migration ⏳
 
-* Convert `messages_en.json` → `messages_en.yml`
-* Add `config.yml` for general PlotNova settings
-* Typed configuration objects with defaults
-* Startup validation with clear error messages
+* Convert `messages_en.json` → `messages_en.yml` (or keep JSON — Paper supports both)
+* Add `config.yml` for general PlotNova settings (partially done — `PaperSettings` handles Paper-specific settings)
+* Typed configuration objects with defaults (done for `PaperSettings`)
+* Startup validation with clear error messages (done — `ConfigValidator`)
+* Remaining: Migrate any remaining Bukkit-style config handling to Paper-native equivalents
 
 ---
 
@@ -213,10 +251,29 @@ Integrate ServiceIO for structured service dependency management and lifecycle c
 
 ## Dependencies
 
-| Dependency     | Type        | Version | Repository                           |
-| -------------- | ----------- | ------- | ------------------------------------ |
-| FancyWorlds    | compileOnly | TODO    | `https://repo.fancyinnovations.com`  |
-| MiniPlaceholder | compileOnly | 2.3.0  | Maven Central                        |
-| VaultUnlocked  | compileOnly | 2.16    | `https://repo.codemc.io`            |
-| Vault (legacy) | compileOnly | 1.7.1   | JitPack                              |
-| Adventure      | compileOnly | 5.2.0   | Maven Central (via Paper)            |
+| Dependency      | Type        | Version | Repository                           |
+| --------------- | ----------- | ------- | ------------------------------------ |
+| FancyWorlds     | compileOnly | TODO    | `https://repo.fancyinnovations.com`  |
+| MiniPlaceholder | compileOnly | 2.3.0   | Maven Central                        |
+| VaultUnlocked   | compileOnly | 2.16    | `https://repo.codemc.io`            |
+| Vault (legacy)  | compileOnly | 1.7.1   | JitPack                              |
+| Adventure       | compileOnly | 5.2.0   | Maven Central (via Paper)            |
+| WorldEdit       | compileOnly | 7.2.20  | `https://maven.enginehub.org/repo/` |
+| FAWE            | compileOnly | 2.15.3  | `https://ci.athion.net`              |
+
+### Build & Dev
+
+| Tool            | Version | Purpose                                    |
+| --------------- | ------- | ------------------------------------------ |
+| Paper API       | 1.21.7  | Server API (compileOnly)                   |
+| run-paper       | latest  | Dev server runner (`./gradlew runDevServer`)|
+| Shadow          | latest  | JAR shading                                |
+| Spotless        | latest  | Code formatting                            |
+
+### Runtime Notes
+
+* **Paper version**: 1.21.7 (upgraded from 1.21.1 for Dialog API support)
+* **Adventure version**: 5.2.0 (upgraded from 4.26.1 — required for `ClickCallback.Options`)
+* **Java target**: 21 (Paper 26.x requires JVM 25+, cannot upgrade beyond 1.21.x on JVM 21)
+* **MiniPlaceholder**: v2.3.0 (v3 requires JVM 25+)
+* **Plugin format**: Bukkit `plugin.yml` (required — Paper `paper-plugin.yml` classloader isolation prevents WorldEdit access)

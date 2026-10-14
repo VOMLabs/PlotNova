@@ -73,6 +73,7 @@ import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
 import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.Storage;
+import com.plotsquared.paper.configuration.PaperConfigValidator;
 import com.plotsquared.paper.configuration.PaperSettings;
 import com.plotsquared.core.configuration.caption.ChatFormatter;
 import com.plotsquared.core.configuration.file.YamlConfiguration;
@@ -295,6 +296,9 @@ public final class PaperPlatform extends JavaPlugin implements Listener, PlotPla
         }
         PaperSettings.load(paperSettingsFile);
         PaperSettings.save(paperSettingsFile);
+
+        // Validate Paper-specific settings
+        PaperConfigValidator.validate();
 
         // FastAsyncWorldEdit
         if (Settings.FAWE_Components.FAWE_HOOK) {
